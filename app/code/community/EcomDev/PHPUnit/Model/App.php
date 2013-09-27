@@ -225,10 +225,10 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
         $this->replaceRegistry(self::REGISTRY_PATH_SHARED_STORAGE, new Varien_Object());
         return $this;
     }
-    
+
     /**
      * Sets cache options for test case
-     * 
+     *
      * @param array $options
      * @return EcomDev_PHPUnit_Model_App
      */
@@ -243,7 +243,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
 
     /**
      * Retrieve cache options for test case
-     * 
+     *
      * @return array
      */
     public function getCacheOptions()
@@ -253,7 +253,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
             '_allowedCacheOptions'
         );
     }
-    
+
     /**
      * Retrieves a model from config and checks it on interface implementation
      *
@@ -367,6 +367,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
                 self::XML_PATH_CONTROLLER_REQUEST, self::INTERFACE_ISOLATION
             );
             $this->_request = new $requestClass;
+            $this->_request->setBaseUrl(Mage::app()->getStore()->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB));
         }
 
         return $this->_request;
