@@ -31,8 +31,8 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Catalog_Product extends EcomDev_P
 
 
     /**
-     * Overridden to fix issue with flat tables existance mark
-     * (non-PHPdoc)
+     * Overridden to fix issue with flat tables existence mark
+     * 
      * @see EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Abstract::loadEntity()
      */
     public function loadEntity($entityType, $values)
@@ -49,7 +49,7 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Catalog_Product extends EcomDev_P
 
     /**
      * Overridden to add easy fixture loading for websites and categories associations
-     * (non-PHPdoc)
+     * 
      * @see EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Abstract::_getCustomTableRecords()
      */
     protected function _getCustomTableRecords($row, $entityTypeModel)
@@ -60,13 +60,17 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Catalog_Product extends EcomDev_P
         $records += $this->_getCategoryAssociationRecords($row, $entityTypeModel);
         $records += $this->_getProductStockRecords($row, $entityTypeModel);
         $records += $this->_getProductSuperRelations($row, $entityTypeModel);
+        $records += $this->_getProductBundleRelations($row, $entityTypeModel);
         return $records;
     }
 
     /**
      * Changed to support price attribute type multi-scope
-     * (non-PHPdoc)
+     *
+     * @param array $row
      * @param Mage_Eav_Model_Entity_Attribute $attribute
+     * @param array $tableColumns
+     * @return array
      * @see EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Catalog_Abstract::_getAttributeRecords()
      */
     protected function _getAttributeRecords($row, $attribute, $tableColumns)
@@ -81,12 +85,49 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Catalog_Product extends EcomDev_P
     }
 
     /**
-     * Generates records for catalog_product_super_attribute and catalog_product_super_link tables
+     * Generates records for catalog_product_bundle_option and catalog_product_bundle_selection tables
      *
      * @param array $row
      * @param Mage_Eav_Model_Entity_Type $entityTypeModel
      * @return array
      * @throws RuntimeException
+     */
+    protected function _getProductBundleRelations($row, $entityTypeModel){
+        $result = array();
+        if (isset($row['bundle_options']) && is_array($row['bundle_options'])) {
+            $aOptions = array();
+            $aSelections = array();
+            foreach($row['bundle_options'] as $iOptionId => $aOption){
+                $aOptions[] = array(
+                    'option_id' => $iOptionId,
+                    'parent_id' => $row[$this->_getEntityIdField($entityTypeModel)],
+                    'type' => 'radio'  //TODO: allow specification of different types
+                );
+                foreach($aOption as $iSelectionProductId){
+                    $aSelections[] = array(
+                        'option_id' => $iOptionId,
+                        'parent_product_id' => $row[$this->_getEntityIdField($entityTypeModel)],
+                        'product_id' => $iSelectionProductId,
+                    );
+                }
+            }
+            if(!empty($aOptions)){
+                $result += array('bundle/option' => $aOptions);
+            }
+            if(!empty($aSelections)){
+                $result += array('bundle/selection' => $aSelections);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Generates records for catalog_product_super_attribute and catalog_product_super_link tables
+     *
+     * @param array $row
+     * @param Mage_Eav_Model_Entity_Type $entityTypeModel
+     * @throws Exception
+     * @return array
      */
     protected function _getProductSuperRelations($row, $entityTypeModel)
     {
@@ -244,7 +285,7 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Catalog_Product extends EcomDev_P
     /**
      * Adding enabled and visibility indexes
      *
-     * (non-PHPdoc)
+     * 
      * @see EcomDev_PHPUnit_Model_Mysql4_Fixture_Eav_Abstract::_customEntityAction()
      */
     protected function _customEntityAction($entity, $entityTypeModel)

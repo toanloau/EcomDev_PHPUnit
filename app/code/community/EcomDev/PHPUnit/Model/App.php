@@ -43,7 +43,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
     const AREA_PART_TRANSLATE = EcomDev_PHPUnit_Model_App_Area::PART_TRANSLATE;
     const AREA_PART_CONFIG = EcomDev_PHPUnit_Model_App_Area::PART_CONFIG;
 
-    const INTERFACE_ISOLATION = 'EcomDev_PHPUnit_Isolation_Interface';
+    const INTERFACE_ISOLATION = 'EcomDev_PHPUnit_IsolationInterface';
 
     const REGISTRY_PATH_LAYOUT_SINGLETON = '_singleton/core/layout';
     const REGISTRY_PATH_DESIGN_PACKAGE_SINGLETON = '_singleton/core/design_package';
@@ -260,6 +260,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
      * @param string $configPath
      * @param string $interface
      * @param string $modelName
+     * @throws RuntimeException
      * @return Mage_Core_Model_Abstract
      */
     protected function _getModelFromConfig($configPath, $interface, $modelName = 'Model')
@@ -330,6 +331,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
      *
      * @param string $key
      * @param string $value
+     * @return $this
      */
     public function replaceRegistry($key, $value)
     {
@@ -356,7 +358,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
 
     /**
      * Returns request for test suite
-     * (non-PHPdoc)
+     * 
      * @see Mage_Core_Model_App::getRequest()
      * @return EcomDev_PHPUnit_Controller_Request_Http
      */
@@ -375,7 +377,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
 
     /**
      * Returns response for test suite
-     * (non-PHPdoc)
+     * 
      * @see Mage_Core_Model_App::getResponse()
      * @return EcomDev_PHPUnit_Controller_Response_Http
      */
@@ -398,6 +400,7 @@ class EcomDev_PHPUnit_Model_App extends Mage_Core_Model_App
      *
      * @param string $configPath
      * @param string $interface
+     * @throws RuntimeException
      * @return string
      */
     protected function _getClassNameFromConfig($configPath, $interface = null)

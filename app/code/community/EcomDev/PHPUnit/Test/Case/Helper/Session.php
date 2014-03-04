@@ -23,8 +23,8 @@ use EcomDev_PHPUnit_Test_Case_Util as TestUtil;
  *
  */
 class EcomDev_PHPUnit_Test_Case_Helper_Session
-    extends EcomDev_PHPUnit_Helper_Abstract
-    implements EcomDev_PHPUnit_Helper_Listener_Interface
+    extends EcomDev_PHPUnit_AbstractHelper
+    implements EcomDev_PHPUnit_Helper_ListenerInterface
 {
     /**
      * Loaded ACL model for admin session mocks
@@ -140,7 +140,7 @@ class EcomDev_PHPUnit_Test_Case_Helper_Session
         // Fix for EE gws functionality
         $userRole = Mage::getModel('admin/roles');
         $userRole->setGwsIsAll(1);
-        $user = Mage::getModel('admin/user');
+        $user = EcomDev_PHPUnit_Helper::invoke('mockModel', 'admin/user', array('reload'))->getMockInstance();
         $user->setId($userId);
         EcomDev_Utils_Reflection::setRestrictedPropertyValue($user, '_role', $userRole);
         return $user;

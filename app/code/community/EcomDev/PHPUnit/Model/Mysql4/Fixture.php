@@ -27,12 +27,14 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture extends Mage_Core_Model_Mysql4_Abstra
     protected function _construct()
     {
         $this->_setResource('ecomdev_phpunit');
+        $this->_resourceModel = NULL;
     }
 
     /**
      * Cleans table in test database
      *
      * @param string $tableEntity
+     * @throws EcomDev_PHPUnit_Model_Mysql4_Fixture_Exception
      * @return EcomDev_PHPUnit_Model_Mysql4_Fixture
      */
     public function cleanTable($tableEntity)
@@ -54,6 +56,8 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture extends Mage_Core_Model_Mysql4_Abstra
      *
      * @param string $tableEntity
      * @param array $tableData
+     * @throws EcomDev_PHPUnit_Model_Mysql4_Fixture_Exception
+     * @return $this
      */
     public function loadTableData($tableEntity, $tableData)
     {
@@ -91,7 +95,7 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture extends Mage_Core_Model_Mysql4_Abstra
     {
         $record = array();
 
-        // Fullfil table records with data
+        // Populate table records with data
         foreach ($tableColumns as $columnName => $definition) {
             if (isset($row[$columnName])) {
                 $record[$columnName] = $this->_getTableRecordValue($row[$columnName]);
@@ -112,6 +116,7 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture extends Mage_Core_Model_Mysql4_Abstra
      *
      *
      * @param mixed $value
+     * @throws InvalidArgumentException
      * @return string
      */
     protected function _getTableRecordValue($value)
@@ -129,6 +134,6 @@ class EcomDev_PHPUnit_Model_Mysql4_Fixture extends Mage_Core_Model_Mysql4_Abstra
             return serialize($value['serialized']);
         }
 
-        throw new InvalidArgumentException('Unrecognized type for DB column');
+        throw new InvalidArgumentException('Unrecognized type for DB column: '.print_r($value, 1));
     }
 }
