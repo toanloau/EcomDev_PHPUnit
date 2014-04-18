@@ -124,6 +124,8 @@ class EcomDev_PHPUnit_Model_Config extends Mage_Core_Model_Config
      */
     public function getModelInstance($modelClass='', $constructArguments=array())
     {
+        // Trim the $modelClass as in some cases it's not a string
+        // The parent code uses a trim to resolve this issue via an implicit toString
         $modelClass = trim($modelClass);
         if (!isset($this->_replaceInstanceCreation['model'][$modelClass])) {
             return parent::getModelInstance($modelClass, $constructArguments);
