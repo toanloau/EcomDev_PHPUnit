@@ -263,4 +263,22 @@ class EcomDev_PHPUnit_Test_Listener implements PHPUnit_Framework_TestListener
         // No action is required
     }
 
+    /**
+     * Risky test.
+     *
+     * @param  PHPUnit_Framework_Test $test
+     * @param  Exception              $e
+     * @param  float                  $time
+     * @since  Method available since Release 3.8.0
+     */
+    public function addRiskyTest(PHPUnit_Framework_Test $test, Exception $e, $time)
+    {
+        Mage::dispatchEvent('phpunit_test_risky', array(
+            'test' => $test,
+            'exception' => $e,
+            'time' => $time,
+            'listener' => $this
+        ));
+        // No action is required
+    }
 }
