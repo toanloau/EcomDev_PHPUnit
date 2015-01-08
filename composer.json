@@ -6,7 +6,10 @@
     "homepage": "http://www.ecomdev.org/shop/code-testing/php-unit-test-suite.html",
     "require": {
         "magento-hackathon/magento-composer-installer": "*",
-        "phpunit/phpunit": "3.7.*"
+        "phpunit/phpunit": "4.1.*"
+    },
+    "replace": {
+        "ivanchepurnyi/ecomdev_phpunit":"*"
     },
     "authors":[
         {

@@ -396,10 +396,17 @@ class EcomDev_PHPUnit_Test_Case_Util
             // Try to find the module name by class name
             $moduleName = false;
             foreach (Mage::getConfig()->getNode('modules')->children() as $module) {
-                if (strpos($className, $module->getName()) === 0) {
+                if (strpos($className, $module->getName() . '_') === 0) {
                     $moduleName = $module->getName();
                     break;
                 }
+            }
+            
+            // Add a possibility to override a module, for which this test is applicable
+            $moduleAnnotations = self::getAnnotationByNameFromClass($className, 'module');
+            
+            if ($moduleAnnotations) {
+                $moduleName = current($moduleAnnotations);
             }
 
             if (!$moduleName) {
@@ -494,7 +501,7 @@ class EcomDev_PHPUnit_Test_Case_Util
     public static function getGroupedClassMockBuilder(PHPUnit_Framework_TestCase $testCase, $type, $classAlias)
     {
         $className = self::getGroupedClassName($type, $classAlias);
-        return new EcomDev_PHPUnit_Mock_Proxy($testCase, $className);
+        return new EcomDev_PHPUnit_Mock_Proxy($testCase, $className, $classAlias);
     }
 
     /**
@@ -504,6 +511,7 @@ class EcomDev_PHPUnit_Test_Case_Util
     public static function setUp()
     {
         self::app()->resetDispatchedEvents();
+        self::$originalStore = Mage::app()->getStore()->getCode();
     }
 
     /**

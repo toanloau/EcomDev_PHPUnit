@@ -16,6 +16,8 @@
  * @author     Ivan Chepurnyi <ivan.chepurnyi@ecomdev.org>
  */
 
+use EcomDev_Utils_Reflection as ReflectionUtil;
+
 /**
  * PHPUnit Mock Object Proxy
  *
@@ -28,6 +30,26 @@ class EcomDev_PHPUnit_Mock_Proxy
     protected $mockInstance;
 
     /**
+     * Original mocked class alias
+     * 
+     * @var string
+     */
+    protected $classAlias;
+
+    /**
+     * Added class alias as property
+     * 
+     * @param PHPUnit_Framework_TestCase $testCase
+     * @param array|string $type
+     * @param null $classAlias
+     */
+    public function __construct(PHPUnit_Framework_TestCase $testCase, $type, $classAlias = null)
+    {
+        parent::__construct($testCase, $type);
+        $this->classAlias = $classAlias;
+    }
+
+    /**
      * Adds method name to a mock builder
      *
      * @param string $methodName
@@ -35,7 +57,9 @@ class EcomDev_PHPUnit_Mock_Proxy
      */
     public function addMethod($methodName)
     {
-        $this->methods[] = $methodName;
+        $methods = ReflectionUtil::getRestrictedPropertyValue($this, 'methods');
+        $methods[] = $methodName;
+        ReflectionUtil::setRestrictedPropertyValue($this, 'methods', $methods);
         return $this;
     }
 
@@ -48,10 +72,12 @@ class EcomDev_PHPUnit_Mock_Proxy
      */
     public function removeMethod($methodName)
     {
-        $methodIndex = array_search($methodName, $this->methods);
+        $methods = ReflectionUtil::getRestrictedPropertyValue($this, 'methods');
+        $methodIndex = array_search($methodName, $methods);
         if ($methodIndex !== false) {
-            array_splice($this->methods, $methodIndex, 1);
+            array_splice($methods, $methodIndex, 1);
         }
+        ReflectionUtil::setRestrictedPropertyValue($this, 'methods', $methods);
         return $this;
     }
 
@@ -74,7 +100,9 @@ class EcomDev_PHPUnit_Mock_Proxy
     public function getMockInstance()
     {
         if ($this->mockInstance === null) {
-            $reflection = EcomDev_Utils_Reflection::getReflection($this->className);
+            $reflection = ReflectionUtil::getReflection(
+                ReflectionUtil::getRestrictedPropertyValue($this, 'type')
+            );
             $this->mockInstance = ($reflection->isAbstract() || $reflection->isInterface())
                                     ? $this->getMockForAbstractClass() : $this->getMock();
         }
@@ -106,30 +134,15 @@ class EcomDev_PHPUnit_Mock_Proxy
     }
 
     /**
-     * Registers a new static expectation in the mock object and returns the
-     * match object which can be infused with further details.
-     *
-     * @param  PHPUnit_Framework_MockObject_Matcher_Invocation $matcher
-     * @return PHPUnit_Framework_MockObject_Builder_InvocationMocker
-     * @throws RuntimeException in case if you call it
+     * Invokes replaceByMock test util method with current mock object proxy instance
+     * 
+     * @param $type
+     * @return $this
      */
-    public static function staticExpects(PHPUnit_Framework_MockObject_Matcher_Invocation $matcher)
+    public function replaceByMock($type)
     {
-        throw new RuntimeException(
-            'This method cannot be called on mock proxy, use staticExpectsProxy instead'
-        );
-    }
-
-    /**
-     * Registers a new static expectation in the mock object and returns the
-     * match object which can be infused with further details.
-     *
-     * @param PHPUnit_Framework_MockObject_Matcher_Invocation $matcher
-     * @return PHPUnit_Framework_MockObject_Builder_InvocationMocker
-     */
-    public function staticExpectsProxy(PHPUnit_Framework_MockObject_Matcher_Invocation $matcher)
-    {
-        return $this->getMockInstance()->staticExpects($matcher);
+        EcomDev_PHPUnit_Test_Case_Util::replaceByMock($type, $this->classAlias, $this);
+        return $this;
     }
 
     /**
@@ -148,7 +161,7 @@ class EcomDev_PHPUnit_Mock_Proxy
 
     /**
      * Returns static invocation mocker
-     * 
+     *
      * @throws RuntimeException
      * @return PHPUnit_Framework_MockObject_InvocationMocker
      */
@@ -156,7 +169,20 @@ class EcomDev_PHPUnit_Mock_Proxy
     {
         throw new RuntimeException(
             'Mock object proxy cannot be used for retrieving invocation mockers, '
-                . 'use getMockInstance method for real mock object'
+            . 'use getMockInstance method for real mock object'
+        );
+    }
+
+    /**
+     * @param $originalObject
+     * @return PHPUnit_Framework_MockObject_InvocationMocker
+     * @since  Method available since Release 2.0.0
+     */
+    public function __phpunit_setOriginalObject($originalObject)
+    {
+        throw new RuntimeException(
+            'Mock object proxy cannot be used for retrieving invocation mockers, '
+            . 'use getMockInstance method for real mock object'
         );
     }
 
@@ -170,7 +196,7 @@ class EcomDev_PHPUnit_Mock_Proxy
     {
         throw new RuntimeException(
             'Mock object proxy cannot be used for verifying mock'
-                . 'use getMockInstance method for real mock object'
+            . 'use getMockInstance method for real mock object'
         );
     }
 
@@ -189,4 +215,5 @@ class EcomDev_PHPUnit_Mock_Proxy
         );
     }
 
+    
 }

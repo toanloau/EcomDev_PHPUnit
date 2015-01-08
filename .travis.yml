@@ -3,6 +3,8 @@ php:
   - 5.3
   - 5.4
 env:
+  - MAGE=1.9.0.1
+  - MAGE=1.8.1.0
   - MAGE=1.7.0.2
   - MAGE=1.6.2.0
   - MAGE=1.5.1.0
@@ -17,7 +19,7 @@ before_script:
   # Installing EcomDev_PHPUnit module
   - bin/mage-ci install-module $MAGE_DIR $(pwd)
   # Configuring EcomDev_PHPUnit module
-  - bin/mage-ci shell $MAGE_DIR ecomdev-phpunit.php -a magento-config --db-name magento --same-db 1 --base_url http://test.magento.com/
+  - bin/mage-ci shell $MAGE_DIR ecomdev-phpunit.php -a magento-config --db-name magento --same-db 1 --base-url http://test.magento.com/
   # Configuring test suite
   - bin/mage-ci shell $MAGE_DIR ecomdev-phpunit.php -a change-status --enable
   # Copying phpunit.xml for travis builds

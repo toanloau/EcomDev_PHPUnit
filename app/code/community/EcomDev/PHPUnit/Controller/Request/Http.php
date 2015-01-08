@@ -158,6 +158,7 @@ class EcomDev_PHPUnit_Controller_Request_Http
         // From Http request
         $this->_paramSources = array('_GET', '_POST');
         $this->_requestUri = null;
+        $this->_params = array();
         $this->_baseUrl = null;
         $this->_basePath = null;
         $this->_pathInfo = '';
@@ -372,7 +373,7 @@ class EcomDev_PHPUnit_Controller_Request_Http
      *
      * @see Mage_Core_Controller_Request_Http::getBaseUrl()
      */
-    public function getBaseUrl()
+    public function getBaseUrl($raw = false)
     {
         return $this->_baseUrl;
     }
