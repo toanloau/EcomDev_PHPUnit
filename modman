@@ -1,3 +1,6 @@
+# fetch integrated submodules due to missing composer compatibility
+@shell cd $MODULE/lib && git submodule init && git submodule sync && git submodule update
+
 # EcomDev_PHPUnit definition
 app/etc/modules/*.xml                   app/etc/modules/
 app/code/community/EcomDev/*            app/code/community/EcomDev/
