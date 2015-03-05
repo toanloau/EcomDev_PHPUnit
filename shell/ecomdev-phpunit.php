@@ -110,6 +110,9 @@ Defined actions:
 
   cache                      Clears magento and phpunit cache directories
 
+  destroy-database           Clears (destroys) the database configured in local.xml.phpunit
+                             WARNING: The contents of the configured database will be lost!
+
   phpunit-config             Copies phpunit.xml.dist file from extension if it doesn't exist
     -r --rewrite             Overrides phpunit.xml.dist file, even if it exists
 
@@ -121,7 +124,7 @@ Defined actions:
     --same-db     <bool>     Changes same db usage flag for unit tests
     --url-rewrite <bool>     Changes use of url rewrites for unit tests
     --base-url    <string>   Changes base url for controller tests
-  
+
   show-version               Shows current version of the module
 
   change-status              Changes status of EcomDev_PHPUnitTest module, that contains built in supplied tests
@@ -155,6 +158,10 @@ USAGE;
             case 'cache':
                 $this->_cleanCache();
                 echo "Cache was cleared\n";
+                break;
+            case 'destroy-database':
+                $this->_destroyDatabase();
+                echo "Test database was cleared\n";
                 break;
             case 'phpunit-config':
                 $this->_copyPHPUnitXml();
@@ -224,6 +231,74 @@ USAGE;
         if (is_dir($this->getArg('project') . '/var/phpunit.cache')) {
             shell_exec('rm -rf ' . $this->getArg('project') . '/var/phpunit.cache');
         }
+    }
+
+    /**
+     * Destroys the configured test database
+     *
+     */
+    protected function _destroyDatabase()
+    {
+        $localXml = $this->getArg('project') . '/' . self::FILE_LOCAL_XML;
+        if (!file_exists($localXml)) {
+            die('Cannot find local.xml.phpunit file in app/etc directory');
+        }
+
+        /** @var Varien_Simplexml_Element $localXmlConfig */
+        $localXmlConfig = simplexml_load_file($localXml, 'Varien_Simplexml_Element');
+
+        $dbHost = (string) current($localXmlConfig->xpath($this->_valuesMap['db-host']['path']));
+        if (!$dbHost) {
+            die('Database host is not set in local.xml.phpunit in app/etc');
+        }
+
+        $dbName = (string) current($localXmlConfig->xpath($this->_valuesMap['db-name']['path']));
+        if (!$dbName) {
+            die('Database name is not set in local.xml.phpunit in app/etc');
+        }
+
+        $dbUser = (string) current($localXmlConfig->xpath($this->_valuesMap['db-user']['path']));
+        if (!$dbUser) {
+            die('Database user is not set in local.xml.phpunit in app/etc');
+        }
+
+        $dbPass = (string) current($localXmlConfig->xpath($this->_valuesMap['db-pwd']['path']));
+        if (!$dbPass) {
+            die('Database password ist not set in local.xml.phpunit in app/etc');
+        }
+
+        /** @var Zend_Db_Adapter_Pdo_Mysql $databaseAdapter */
+        $databaseAdapter = new Zend_Db_Adapter_Pdo_Mysql(
+            [
+                'host'  => $dbHost,
+                'username' => $dbUser,
+                'password' => $dbPass,
+                'dbname'   => $dbName
+            ]
+        );
+
+        try {
+            $tablesQuery = $databaseAdapter->query(
+                'select table_name from information_schema.tables where table_schema=?',
+                array(
+                    $dbName
+                )
+            );
+            $tablesQuery->execute();
+            $tables = $tablesQuery->fetchAll();
+
+            $databaseAdapter->beginTransaction();
+            $databaseAdapter->exec('SET FOREIGN_KEY_CHECKS = 0;');
+            foreach ($tables as $_table) {
+                $databaseAdapter->exec('DROP TABLE `' . $_table['table_name'] . '`');
+            }
+            $databaseAdapter->exec('SET FOREIGN_KEY_CHECKS = 1;');
+            $databaseAdapter->commit();
+        } catch (Exception $e) {
+            $databaseAdapter->rollBack();
+            die('Unable to destroy test database: ' . $e->getMessage());
+        }
+        $databaseAdapter->closeConnection();
     }
 
     /**
