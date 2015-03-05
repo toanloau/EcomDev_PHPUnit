@@ -289,8 +289,10 @@ USAGE;
 
             $databaseAdapter->beginTransaction();
             $databaseAdapter->exec('SET FOREIGN_KEY_CHECKS = 0;');
+            $dropCount = 0;
             foreach ($tables as $_table) {
                 $databaseAdapter->exec('DROP TABLE `' . $_table['table_name'] . '`');
+                $dropCount++;
             }
             $databaseAdapter->exec('SET FOREIGN_KEY_CHECKS = 1;');
             $databaseAdapter->commit();
@@ -298,6 +300,7 @@ USAGE;
             $databaseAdapter->rollBack();
             die('Unable to destroy test database: ' . $e->getMessage());
         }
+        echo "$dropCount tables dropped removed from $dbName\n";
         $databaseAdapter->closeConnection();
     }
 
